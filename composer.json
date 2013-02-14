@@ -1,0 +1,7 @@
+{
+    "require": {
+        "silex/silex": "1.0.*@dev",
+        "aws/aws-sdk-php": "*"
+    }
+}
+
