@@ -147,15 +147,6 @@ $app->post("/image", function () use ($app) {
                 $img->chopImage( 0, $y, 0, 0 );
                 $img->chopImage( 0, $y, 0, $w );
             }
-
-             // Small Square Size (150px by 150px)
-            if( $sizes[ 4 ]){
-
-                $img->thumbnailImage( 150, 0 );
-                $files[ 4 ]    = $img->getImageBlob();
-                $fileNames[ 4 ] = $filePrefix . "_4.png";
-            }
-
             // Medium Square Size (250px by 250px)
             if( $sizes[ 6 ]){
 
@@ -163,6 +154,16 @@ $app->post("/image", function () use ($app) {
                 $files[ 6 ]    = $img->getImageBlob();
                 $fileNames[ 6 ] = $filePrefix . "_6.png";
             }
+
+            // Small Square Size (150px by 150px)
+            if( $sizes[ 4 ]){
+
+                $img->thumbnailImage( 150, 0 );
+                $files[ 4 ]    = $img->getImageBlob();
+                $fileNames[ 4 ] = $filePrefix . "_4.png";
+            }
+
+            
         }
 
 
@@ -317,14 +318,6 @@ $app->get("/image", function () use ($app) {
                 $img->chopImage( 0, $y, 0, $w );
             }
 
-             // Small Square Size (150px by 150px)
-            if( $sizes[ 4 ]){
-
-                $img->thumbnailImage( 150, 0 );
-                $files[ 4 ]    = $img->getImageBlob();
-                $fileNames[ 4 ] = $filePrefix . "_4.png";
-            }
-
             // Medium Square Size (250px by 250px)
             if( $sizes[ 6 ]){
 
@@ -332,6 +325,16 @@ $app->get("/image", function () use ($app) {
                 $files[ 6 ]    = $img->getImageBlob();
                 $fileNames[ 6 ] = $filePrefix . "_6.png";
             }
+
+            // Small Square Size (150px by 150px)
+            if( $sizes[ 4 ]){
+
+                $img->thumbnailImage( 150, 0 );
+                $files[ 4 ]    = $img->getImageBlob();
+                $fileNames[ 4 ] = $filePrefix . "_4.png";
+            }
+
+            
         }
 
 
