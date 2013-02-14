@@ -387,7 +387,7 @@ $app->get("/frame/{id}", function ($id) use ($app) {
    
     $res = $client->putObject(array(
             "Bucket" => FRAME_BUCKET,
-            "Key"    => $fileNames[ $i ],
+            "Key"    => $fileName,
             "Body"  => EntityBody::factory(fopen($file[ 1 ], 'r')),
             "ACL" => CannedAcl::PUBLIC_READ,
             "ContentType" => "image/png"
@@ -395,7 +395,7 @@ $app->get("/frame/{id}", function ($id) use ($app) {
     );
 
     $url= "http://" . FRAME_BUCKET . ".s3.amazonaws.com/" . $fileName;
-    return $app->json($url);
+    return $app->json(array($url));
 
 });
 
