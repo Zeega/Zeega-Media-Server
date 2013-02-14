@@ -379,26 +379,33 @@ $app->get("/frame/{id}", function ($id) use ($app) {
     exec( "/opt/webcapture/webpage_capture -t 80x60 -crop ". FRAME_URL . $id . "/view " . PATH, $output );
     $file=explode(":", $output[4] );
 
-    // Instantiate the S3 class
+    // Test if screencapture successfule TODO create better test
+    if(!is_null($file[1])){
+        // Instantiate the S3 class
+        $aws = Aws::factory(array(
+            'key' => AWS_ACCESS_KEY,
+            'secret' => AWS_SECRET_KEY
+        ));
 
-    $aws = Aws::factory(array(
-        'key' => AWS_ACCESS_KEY,
-        'secret' => AWS_SECRET_KEY
-    ));
+        $client = $aws->get('s3');
+       
+        $res = $client->putObject(array(
+                "Bucket" => FRAME_BUCKET,
+                "Key"    => $fileName,
+                "Body"  => EntityBody::factory(fopen($file[ 1 ], 'r')),
+                "ACL" => CannedAcl::PUBLIC_READ,
+                "ContentType" => "image/png"
+            )
+        );
 
-    $client = $aws->get('s3');
-   
-    $res = $client->putObject(array(
-            "Bucket" => FRAME_BUCKET,
-            "Key"    => $fileName,
-            "Body"  => EntityBody::factory(fopen($file[ 1 ], 'r')),
-            "ACL" => CannedAcl::PUBLIC_READ,
-            "ContentType" => "image/png"
-        )
-    );
+        $url= "http://" . FRAME_BUCKET . ".s3.amazonaws.com/" . $fileName;
+        return new Response ($url, 200);
+    } else {
+        return new Response ("", 500);
+    }
+    
 
-    $url= "http://" . FRAME_BUCKET . ".s3.amazonaws.com/" . $fileName;
-    return $app->json(array($url));
+    
 
 });
 
