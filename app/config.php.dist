@@ -2,4 +2,11 @@
 
     define("AWS_ACCESS_KEY", "");
     define("AWS_SECRET_KEY", "");
+    
+    define("IMAGE_BUCKET", "");
+    define("FRAME_BUCKET", "");
+    define("FRAME_URL", "");
+    define("PATH", "");
+
+
 ?>

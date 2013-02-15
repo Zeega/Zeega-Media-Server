@@ -11,13 +11,6 @@ use Aws\Common\Aws;
 use Aws\S3\Enum\CannedAcl;
 use Guzzle\Http\EntityBody;
 
-
-define("IMAGE_BUCKET", "zeegaimages1");
-define("FRAME_BUCKET", "zeegaimages2");
-define("FRAME_URL", "http://alpha.zeega.org/frame/");
-define("PATH", "/opt/tmp");
-
-
 $app = new Silex\Application();
 
 
@@ -186,7 +179,10 @@ $app->post("/image", function () use ($app) {
                 $urls[ "image_url_" . $i ] = "http://" . IMAGE_BUCKET . ".s3.amazonaws.com/" . $fileNames[ $i ];
             }
         }
+        return new  Response($app->json($urls), 200);
+    } else {
 
+         return new Response("",500);
     }
 
     
