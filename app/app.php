@@ -179,14 +179,14 @@ $app->post("/image", function () use ($app) {
                 $urls[ "image_url_" . $i ] = "http://" . IMAGE_BUCKET . ".s3.amazonaws.com/" . $fileNames[ $i ];
             }
         }
-        return new  Response($app->json($urls), 200);
+        return $app->json($urls);
     } else {
 
          return new Response("",500);
     }
 
     
-    return $app->json($urls);
+
 
 });
 
