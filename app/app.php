@@ -15,7 +15,7 @@ $app = new Silex\Application();
 
 
 
-$app["debug"] = true;
+//$app["debug"] = true;
 
 
 $app->post("/image", function () use ($app) {
@@ -179,7 +179,7 @@ $app->post("/image", function () use ($app) {
                 $urls[ "image_url_" . $i ] = "http://" . IMAGE_BUCKET . ".s3.amazonaws.com/" . $fileNames[ $i ];
             }
         }
-        return $app->json($urls);
+        return json_encode($urls);
     } else {
 
          return new Response("",500);
