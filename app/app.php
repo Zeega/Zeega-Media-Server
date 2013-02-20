@@ -96,7 +96,7 @@ $app->post("/image", function () use ($app) {
 
             // Save Originals
             if( $sizes [ 0 ] ){
-                $files[ 0 ] = $s3->inputFile( $_FILES["imagefile"]["tmp_name"], false);
+                $files[ 0 ] = fopen( $_FILES["imagefile"]["tmp_name"], "r");
                 $fileNames[ 0 ] = $filePrefix . "." . $fileExt;
             }
         }
