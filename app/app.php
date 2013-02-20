@@ -56,19 +56,19 @@ $app->post("/image", function () use ($app) {
 
 
 
-    // Check for network media asset
-    if( isset( $_GET["url"] )){
 
-        $img = new Imagick( $_GET["url"] );
+
+
+
         
-        // Do not save Large Size for networked media assets
-        $sizes[ 7 ] = false;
 
-        //Youtube image formatting hack to remove black bars
-        if(strstr($_GET["url"] ,"i.ytimg.com")){
-            $img->cropImage($thumb->getImageWidth(), $img->getImageHeight()-90, 0, 45);
-        }
-    } else if( isset( $_FILES["imagefile"]["tmp_name"])){
+
+
+
+
+
+
+    if( isset( $_FILES["imagefile"]["tmp_name"])){
 
         if( strpos( $_FILES["imagefile"]["type"], "image/" ) === 0 ){
             $fileType = $_FILES["imagefile"]["type"];
@@ -239,7 +239,7 @@ $app->get("/image", function () use ($app) {
 
         //Youtube image formatting hack to remove black bars
         if(strstr($_GET["url"] ,"i.ytimg.com")){
-            $img->cropImage($thumb->getImageWidth(), $img->getImageHeight()-90, 0, 45);
+            $img->cropImage($img->getImageWidth(), $img->getImageHeight()-90, 0, 45);
         }
     } else if( isset( $_FILES["imagefile"]["tmp_name"])){
 
