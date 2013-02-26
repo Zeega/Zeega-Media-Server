@@ -12,7 +12,12 @@ use Aws\S3\Enum\CannedAcl;
 use Guzzle\Http\EntityBody;
 
 $app = new Silex\Application();
-//$app["debug"] = true;
+$app["debug"] = true;
+
+$app->register(new Silex\Provider\MonologServiceProvider(), array(
+    'monolog.logfile' => __DIR__.'/../logs/dev.log',
+));
+
 
 $app->post("/image", function () use ($app) {
     // Create unique filename
@@ -150,6 +155,7 @@ $app->post("/image", function () use ($app) {
 
 
 $app->get("/image", function () use ($app) {
+    
     // Create unique filename
     $filePrefix = md5( uniqid( rand(), true ));
 
@@ -178,13 +184,15 @@ $app->get("/image", function () use ($app) {
 
     // Check for network media asset
     if( isset( $_GET["url"] )){
-        $img = new Imagick( $_GET["url"] );
+        $url = $_GET["url"];
+        $url = str_replace(" ","%20",$url);
+        $img = new Imagick($url);
         
         // Do not save Large Size for networked media assets
         $sizes[ 7 ] = false;
 
         //Youtube image formatting hack to remove black bars
-        if(strstr($_GET["url"] ,"i.ytimg.com")){
+        if(strstr($url, "i.ytimg.com")){
             $img->cropImage($img->getImageWidth(), $img->getImageHeight()-90, 0, 45);
         }
     } else if( isset( $_FILES["imagefile"]["tmp_name"])){
