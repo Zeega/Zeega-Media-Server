@@ -1,7 +1,8 @@
 {
     "require": {
         "silex/silex": "1.0.*@dev",
-        "aws/aws-sdk-php": "*"
+        "aws/aws-sdk-php": "*",
+        "monolog/monolog": ">=1.0.0"
     }
 }
 
