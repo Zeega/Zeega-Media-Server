@@ -1,5 +1,5 @@
 app/config.php
 composer.phar
-composer.lock
 vendor
 web/.htaccess
+logs/*
