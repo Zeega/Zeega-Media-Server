@@ -12,24 +12,11 @@ use Aws\S3\Enum\CannedAcl;
 use Guzzle\Http\EntityBody;
 
 $app = new Silex\Application();
-
-
-
 //$app["debug"] = true;
 
-
 $app->post("/image", function () use ($app) {
-
-    
-    
-
-
     // Create unique filename
     $filePrefix = md5( uniqid( rand(), true ));
-
-
-    // Instantiate S3 class
-    //$s3 = new S3( AWS_ACCESS_KEY, AWS_SECRET_KEY );
 
     $aws = Aws::factory(array(
                     'key' => AWS_ACCESS_KEY,
@@ -37,8 +24,8 @@ $app->post("/image", function () use ($app) {
                 ));
     $client = $aws->get('s3');
 
-       // Check sizes requested
-    if( isset( $_GET["sizes"])){
+    // Check sizes requested
+    if( isset($_GET["sizes"]) ) {
         $sizeList = (string) $_GET["sizes"];
         for ( $i = 0; $i < strlen( $sizeList ); $i++ ) {
             $sizes[ substr($sizeList, $i, 1 )] = true;
@@ -48,36 +35,19 @@ $app->post("/image", function () use ($app) {
                 $sizes[ $i ] = false;
             }
         }
-
     } else {
         $sizes[ 4 ] = $sizes [ 5 ] =  $sizes[ 6 ] = $sizes [ 7 ] = true;
         $sizes[ 0 ] = false;
     }
 
-
-
-
-
-
-
-        
-
-
-
-
-
-
-
-    if( isset( $_FILES["imagefile"]["tmp_name"])){
-
-        if( strpos( $_FILES["imagefile"]["type"], "image/" ) === 0 ){
+    if( isset($_FILES["imagefile"]["tmp_name"]) ) {
+        if( strpos( $_FILES["imagefile"]["type"], "image/" ) === 0 ) {
             $fileType = $_FILES["imagefile"]["type"];
             $fileExt = substr( $fileType, 6 );
-        } else if( $_FILES["imagefile"]["type"] == "application/octet-stream"){
+        } else if( $_FILES["imagefile"]["type"] == "application/octet-stream") {
             $fileExt = explode(".", $_FILES["imagefile"]["name"]);
             $fileExt = array_pop($fileExt);
             $fileExt=strtolower($fileExt);
-
 
             if(in_array( $fileExt, array("png", "jpeg", "gif", "jpg"))){
                 $fileType = "image/" . $fileExt;
@@ -102,14 +72,11 @@ $app->post("/image", function () use ($app) {
         }
     }
     
-    if(isset($img)){
-
+    if ( isset($img) ) {
         $img->setImageFormat("png");
 
-
         // Thumbnail Size (max dimension 200px)
-        if( $sizes[ 5 ]){
-
+        if( $sizes[ 5 ] ) {
             $img2 = clone $img;
             $img2->thumbnailImage(200,0);
             $files[ 5 ] = $img2->getImageBlob();
@@ -117,7 +84,7 @@ $app->post("/image", function () use ($app) {
         }
 
         // Large Size (max dimension 1280px)
-        if($sizes[ 7 ]){
+        if( $sizes[ 7 ] ) {
 
             if($img->getImageHeight() > 1280 || $img->getImageWidth() > 1280){
                 $img->thumbnailImage( 1280, 0 );
@@ -155,12 +122,7 @@ $app->post("/image", function () use ($app) {
                 $files[ 4 ]    = $img->getImageBlob();
                 $fileNames[ 4 ] = $filePrefix . "_4.png";
             }
-
-            
         }
-
-
-
 
         // Upload files to S3, Original file is uploaded using putObjectFile instead of putObject
 
@@ -184,25 +146,12 @@ $app->post("/image", function () use ($app) {
 
          return new Response("",500);
     }
-
-    
-
-
 });
 
 
 $app->get("/image", function () use ($app) {
-
-    
-    
-
-
     // Create unique filename
     $filePrefix = md5( uniqid( rand(), true ));
-
-
-    // Instantiate S3 class
-    //$s3 = new S3( AWS_ACCESS_KEY, AWS_SECRET_KEY );
 
     $aws = Aws::factory(array(
                     'key' => AWS_ACCESS_KEY,
@@ -210,7 +159,7 @@ $app->get("/image", function () use ($app) {
                 ));
     $client = $aws->get('s3');
 
-       // Check sizes requested
+    // Check sizes requested
     if( isset( $_GET["sizes"])){
         $sizeList = (string) $_GET["sizes"];
         for ( $i = 0; $i < strlen( $sizeList ); $i++ ) {
@@ -227,11 +176,8 @@ $app->get("/image", function () use ($app) {
         $sizes[ 0 ] = false;
     }
 
-
-
     // Check for network media asset
     if( isset( $_GET["url"] )){
-
         $img = new Imagick( $_GET["url"] );
         
         // Do not save Large Size for networked media assets
@@ -276,9 +222,7 @@ $app->get("/image", function () use ($app) {
     }
     
     if(isset($img)){
-
         $img->setImageFormat("png");
-
 
         // Thumbnail Size (max dimension 200px)
         if( $sizes[ 5 ]){
@@ -329,15 +273,9 @@ $app->get("/image", function () use ($app) {
                 $files[ 4 ]    = $img->getImageBlob();
                 $fileNames[ 4 ] = $filePrefix . "_4.png";
             }
-
-            
         }
 
-
-
-
         // Upload files to S3, Original file is uploaded using putObjectFile instead of putObject
-
         for( $i = 0; $i < 8; $i++ ){
             if( isset($fileNames[ $i ])){
 
@@ -353,22 +291,15 @@ $app->get("/image", function () use ($app) {
                 $urls[ "image_url_" . $i ] = "http://" . IMAGE_BUCKET . ".s3.amazonaws.com/" . $fileNames[ $i ];
             }
         }
-
     }
-
     
     return $app->json($urls);
-
 });
 
 
 $app->get("/frame/{id}", function ($id) use ($app) {
-    
-
-   // Create unique filename
+    // Create unique filename
     $fileName = md5( uniqid( rand(), true )) . ".png";
-
-
 
     // Run cutycapt to create screencapture
 
@@ -399,15 +330,6 @@ $app->get("/frame/{id}", function ($id) use ($app) {
     } else {
         return new Response ("", 500);
     }
-    
-
-    
-
 });
 
-
 return $app;
-
-
-
-                                               
