@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Aws\Common\Aws;
 use Aws\S3\Enum\CannedAcl;
 use Guzzle\Http\EntityBody;
+use Zeega\ImagickService;
 
 $app = new Silex\Application();
 $app["debug"] = true;
@@ -17,6 +18,10 @@ $app["debug"] = true;
 $app->register(new Silex\Provider\MonologServiceProvider(), array(
     'monolog.logfile' => __DIR__.'/../logs/dev.log',
 ));
+
+$app['imagick_service'] = function() {
+    return new ImagickService();
+};
 
 
 $app->post("/image", function () use ($app) {
@@ -187,7 +192,8 @@ $app->get("/image", function () use ($app) {
         $url = $_GET["url"];
         $url = str_replace(" ","%20",$url);
         $img = new Imagick($url);
-        
+        $img = $app['imagick_service']->coalesceIfAnimated($img);
+
         // Do not save Large Size for networked media assets
         $sizes[ 7 ] = false;
 
