@@ -3,6 +3,11 @@
         "silex/silex": "1.0.*@dev",
         "aws/aws-sdk-php": "*",
         "monolog/monolog": ">=1.0.0"
+    },
+    "autoload": {
+        "psr-0": {
+            "Zeega": "src/"
+         }
     }
 }
 
