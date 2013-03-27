@@ -25,6 +25,10 @@ $app['imagick_service'] = function() {
 
 
 $app->post("/image", function () use ($app) {
+
+   
+  // return var_dump($_FILES);
+   if( isset($_FILES["file"])) $_FILES["imagefile"]=$_FILES["file"];
     // Create unique filename
     $filePrefix = md5( uniqid( rand(), true ));
 
@@ -148,10 +152,12 @@ $app->post("/image", function () use ($app) {
                         "ContentType" => "image/png"
                     )
                 );
-                $urls[ "image_url_" . $i ] = "http://" . IMAGE_BUCKET . ".s3.amazonaws.com/" . $fileNames[ $i ];
+                $response[ "image_url_" . $i ] = "http://" . IMAGE_BUCKET . ".s3.amazonaws.com/" . $fileNames[ $i ];
             }
         }
-        return json_encode($urls);
+        $response[ "title" ] = $_FILES[ "imagefile" ][ "name" ];
+        
+        return json_encode($response);
     } else {
 
          return new Response("",500);
