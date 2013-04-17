@@ -13,11 +13,13 @@ use Guzzle\Http\EntityBody;
 use Zeega\ImagickService;
 
 $app = new Silex\Application();
-$app["debug"] = true;
+$app["debug"] = false;
 
+/*
 $app->register(new Silex\Provider\MonologServiceProvider(), array(
     'monolog.logfile' => __DIR__.'/../logs/dev.log',
 ));
+*/
 
 $app['imagick_service'] = function() {
     return new ImagickService();
