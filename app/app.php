@@ -156,7 +156,15 @@ $app->post("/image", function () use ($app) {
             }
         }
         $response[ "title" ] = $_FILES[ "imagefile" ][ "name" ];
-        
+       if( $sizes[ 7 ] ){
+
+            $response[ "fullsize_url" ] = "http://" . IMAGE_BUCKET . ".s3.amazonaws.com/" . $fileNames[ 7 ];
+
+        } else {
+
+            $response[ "fullsize_url" ] = "http://" . IMAGE_BUCKET . ".s3.amazonaws.com/" . $fileNames[ 0 ];
+
+        } 
         return json_encode($response);
     } else {
 
