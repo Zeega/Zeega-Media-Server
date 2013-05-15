@@ -99,11 +99,11 @@ $app->post("/image", function () use ($app) {
             $fileNames[ 5 ] = $filePrefix . "_5.png";
         }
 
-        // Large Size (max dimension 1280px)
+        // Large Size (max dimension 800px)
         if( $sizes[ 7 ] ) {
 
-            if($img->getImageHeight() > 1280 || $img->getImageWidth() > 1280){
-                $img->thumbnailImage( 1280, 0 );
+            if($img->getImageHeight() > 800 || $img->getImageWidth() > 800){
+                $img->thumbnailImage( 800, 0 );
             }
             $files[ 7 ] = $img->getImageBlob();
             $fileNames[ 7 ] = $filePrefix."_7.png";
@@ -263,11 +263,11 @@ $app->get("/image", function () use ($app) {
             $fileNames[ 5 ] = $filePrefix . "_5.png";
         }
 
-        // Large Size (max dimension 1280px)
+        // Large Size (max dimension 800px)
         if($sizes[ 7 ]){
 
-            if($img->getImageHeight() > 1280 || $img->getImageWidth() > 1280){
-                $img->thumbnailImage( 1280, 0 );
+            if($img->getImageHeight() > 800 || $img->getImageWidth() > 800){
+                $img->thumbnailImage( 800, 0 );
             }
             $files[ 7 ] = $img->getImageBlob();
             $fileNames[ 7 ] = $filePrefix."_7.png";
