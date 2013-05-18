@@ -26,6 +26,7 @@ $app['imagick_service'] = function() {
 };
 
 
+
 $app->post("/image", function () use ($app) {
 
    
@@ -63,7 +64,7 @@ $app->post("/image", function () use ($app) {
         } else if( $_FILES["imagefile"]["type"] == "application/octet-stream") {
             $fileExt = explode(".", $_FILES["imagefile"]["name"]);
             $fileExt = array_pop($fileExt);
-            $fileExt=strtolower($fileExt);
+            $fileExt = strtolower($fileExt);
 
             if(in_array( $fileExt, array("png", "jpeg", "gif", "jpg"))){
                 $fileType = "image/" . $fileExt;
@@ -89,14 +90,27 @@ $app->post("/image", function () use ($app) {
     }
     
     if ( isset($img) ) {
-        $img->setImageFormat("png");
+        
+
+        $fileExt = explode(".", $_GET["url"]);
+        $fileExt = array_pop($fileExt);
+        $fileExt = strtolower($fileExt);
+
+        if( $fileExt == "png" ){
+            $img->setImageFormat( "png" );
+        } else {
+            $fileExt = "jpg";
+            $img->setImageFormat("jpg");
+        }
+
+
 
         // Thumbnail Size (max dimension 200px)
         if( $sizes[ 5 ] ) {
             $img2 = clone $img;
             $img2->thumbnailImage(200,0);
             $files[ 5 ] = $img2->getImageBlob();
-            $fileNames[ 5 ] = $filePrefix . "_5.png";
+            $fileNames[ 5 ] = $filePrefix . "_5." . $fileExt;
         }
 
         // Large Size (max dimension 800px)
@@ -106,7 +120,7 @@ $app->post("/image", function () use ($app) {
                 $img->thumbnailImage( 800, 0 );
             }
             $files[ 7 ] = $img->getImageBlob();
-            $fileNames[ 7 ] = $filePrefix."_7.png";
+            $fileNames[ 7 ] = $filePrefix."_7." . $fileExt;
         }
 
         if($sizes[ 6 ] || $sizes[ 4 ]){
@@ -128,7 +142,7 @@ $app->post("/image", function () use ($app) {
 
                 $img->thumbnailImage( 250, 0);
                 $files[ 6 ]    = $img->getImageBlob();
-                $fileNames[ 6 ] = $filePrefix . "_6.png";
+                $fileNames[ 6 ] = $filePrefix . "_6." . $fileExt;
             }
 
             // Small Square Size (150px by 150px)
@@ -136,7 +150,7 @@ $app->post("/image", function () use ($app) {
 
                 $img->thumbnailImage( 150, 0 );
                 $files[ 4 ]    = $img->getImageBlob();
-                $fileNames[ 4 ] = $filePrefix . "_4.png";
+                $fileNames[ 4 ] = $filePrefix . "_4." . $fileExt;
             }
         }
 
@@ -151,7 +165,7 @@ $app->post("/image", function () use ($app) {
                         "Key"    => $fileNames[ $i ],
                         "Body"  => EntityBody::factory($files[ $i ]),
                         "ACL" => CannedAcl::PUBLIC_READ,
-                        "ContentType" => "image/png"
+                        "ContentType" => "image/jpg"
                     )
                 );
                 $response[ "image_url_" . $i ] = "http://" . IMAGE_BUCKET . ".s3.amazonaws.com/" . $fileNames[ $i ];
@@ -208,7 +222,10 @@ $app->get("/image", function () use ($app) {
         $url = $_GET["url"];
         $url = str_replace(" ","%20",$url);
         $img = new Imagick($url);
+
         $img = $app['imagick_service']->coalesceIfAnimated($img);
+
+
 
         // Do not save Large Size for networked media assets
         $sizes[ 7 ] = false;
@@ -217,42 +234,26 @@ $app->get("/image", function () use ($app) {
         if(strstr($url, "i.ytimg.com")){
             $img->cropImage($img->getImageWidth(), $img->getImageHeight()-90, 0, 45);
         }
-    } else if( isset( $_FILES["imagefile"]["tmp_name"])){
-
-        if( strpos( $_FILES["imagefile"]["type"], "image/" ) === 0 ){
-            $fileType = $_FILES["imagefile"]["type"];
-            $fileExt = substr( $fileType, 6 );
-        } else if( $_FILES["imagefile"]["type"] == "application/octet-stream"){
-            $fileExt = explode(".", $_FILES["imagefile"]["name"]);
-            $fileExt = array_pop($fileExt);
-            $fileExt=strtolower($fileExt);
-
-
-            if(in_array( $fileExt, array("png", "jpeg", "gif", "jpg"))){
-                $fileType = "image/" . $fileExt;
-            }
-        }
-
-        if(isset($fileType)){
-            $img = new Imagick($_FILES["imagefile"]["tmp_name"]);
-
-            // Save originals when file type is gif
-            // TODO resize GIFs
-            if( $fileType == "image/gif"){
-                $sizes[ 0 ] = true;
-                $sizes [ 7 ] = false;
-            }
-
-            // Save Originals
-            if( $sizes [ 0 ] ){
-                $files[ 0 ] = $s3->inputFile( $_FILES["imagefile"]["tmp_name"], false);
-                $fileNames[ 0 ] = $filePrefix . "." . $fileExt;
-            }
-        }
     }
     
     if(isset($img)){
-        $img->setImageFormat("png");
+        
+
+        $fileExt = explode(".", $_GET["url"]);
+        $fileExt = array_pop($fileExt);
+        $fileExt = strtolower($fileExt);
+
+        if(in_array( $fileExt, array("png", "jpeg", "gif", "jpg"))){
+            $fileType = "image/" . $fileExt;
+        }
+
+        if( $fileExt == "png"){
+            $img->setImageFormat("png");
+        } else {
+            $fileExt = "jpg";
+            $img->setImageFormat("jpg");
+        }
+
 
         // Thumbnail Size (max dimension 200px)
         if( $sizes[ 5 ]){
@@ -260,7 +261,7 @@ $app->get("/image", function () use ($app) {
             $img2 = clone $img;
             $img2->thumbnailImage(200,0);
             $files[ 5 ] = $img2->getImageBlob();
-            $fileNames[ 5 ] = $filePrefix . "_5.png";
+            $fileNames[ 5 ] = $filePrefix . "_5." . $fileExt;
         }
 
         // Large Size (max dimension 800px)
@@ -270,7 +271,7 @@ $app->get("/image", function () use ($app) {
                 $img->thumbnailImage( 800, 0 );
             }
             $files[ 7 ] = $img->getImageBlob();
-            $fileNames[ 7 ] = $filePrefix."_7.png";
+            $fileNames[ 7 ] = $filePrefix."_7." . $fileExt;
         }
 
         if($sizes[ 6 ] || $sizes[ 4 ]){
@@ -293,7 +294,7 @@ $app->get("/image", function () use ($app) {
 
                 $img->thumbnailImage( 250, 0);
                 $files[ 6 ]    = $img->getImageBlob();
-                $fileNames[ 6 ] = $filePrefix . "_6.png";
+                $fileNames[ 6 ] = $filePrefix . "_6." . $fileExt;
             }
 
             // Small Square Size (150px by 150px)
@@ -301,7 +302,7 @@ $app->get("/image", function () use ($app) {
 
                 $img->thumbnailImage( 150, 0 );
                 $files[ 4 ]    = $img->getImageBlob();
-                $fileNames[ 4 ] = $filePrefix . "_4.png";
+                $fileNames[ 4 ] = $filePrefix . "_4." . $fileExt;
             }
         }
 
@@ -315,7 +316,7 @@ $app->get("/image", function () use ($app) {
                         "Key"    => $fileNames[ $i ],
                         "Body"  => EntityBody::factory($files[ $i ]),
                         "ACL" => CannedAcl::PUBLIC_READ,
-                        "ContentType" => "image/png"
+                        "ContentType" => "image/jpg"
                     )
                 );
                 $urls[ "image_url_" . $i ] = "http://" . IMAGE_BUCKET . ".s3.amazonaws.com/" . $fileNames[ $i ];
@@ -329,7 +330,7 @@ $app->get("/image", function () use ($app) {
 
 $app->get("/frame/{id}", function ($id) use ($app) {
     // Create unique filename
-    $fileName = md5( uniqid( rand(), true )) . ".png";
+    $fileName = md5( uniqid( rand(), true )) . ".jpg";
 
     // Run cutycapt to create screencapture
 
@@ -351,7 +352,7 @@ $app->get("/frame/{id}", function ($id) use ($app) {
                 "Key"    => $fileName,
                 "Body"  => EntityBody::factory(fopen($file[ 1 ], 'r')),
                 "ACL" => CannedAcl::PUBLIC_READ,
-                "ContentType" => "image/png"
+                "ContentType" => "image/jpg"
             )
         );
 
