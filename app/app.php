@@ -363,4 +363,39 @@ $app->get("/frame/{id}", function ($id) use ($app) {
     }
 });
 
+$app->get("/projects/{projectId}/frames/{frameId}", function ($projectId, $frameId) use ($app) {
+    // Create unique filename
+    $fileName = md5( uniqid( rand(), true )) . ".png";
+
+    // Run cutycapt to create screencapture
+    $url = ZEEGA_HOST . "projects/$projectId/frames/$frameId";
+    exec( "/opt/webcapture/webpage_capture -t 80x60 -crop $url " . PATH, $output );
+    $file=explode(":", $output[4] );
+    
+    // Test if screencapture successfule TODO create better test
+    if(!is_null($file[1])){
+        // Instantiate the S3 class
+        $aws = Aws::factory(array(
+            'key' => AWS_ACCESS_KEY,
+            'secret' => AWS_SECRET_KEY
+        ));
+
+        $client = $aws->get('s3');
+       
+        $res = $client->putObject(array(
+                "Bucket" => FRAME_BUCKET,
+                "Key"    => $fileName,
+                "Body"  => EntityBody::factory(fopen($file[ 1 ], 'r')),
+                "ACL" => CannedAcl::PUBLIC_READ,
+                "ContentType" => "image/png"
+            )
+        );
+
+        $url= "http://" . FRAME_BUCKET . ".s3.amazonaws.com/" . $fileName;
+        return new Response ($url, 200);
+    } else {
+        return new Response ("", 500);
+    }
+});
+
 return $app;
