@@ -213,8 +213,8 @@ $app->get("/image", function () use ($app) {
         }
 
     } else {
-        $sizes[ 4 ] = $sizes [ 5 ] =  $sizes[ 6 ] = $sizes [ 7 ] = true;
-        $sizes[ 0 ] = false;
+        $sizes[ 4 ] = $sizes [ 5 ] =  $sizes[ 6 ] =  true;
+        $sizes[ 0 ] = $sizes[ 7 ] = false;
     }
 
     // Check for network media asset
@@ -228,7 +228,7 @@ $app->get("/image", function () use ($app) {
 
 
         // Do not save Large Size for networked media assets
-        $sizes[ 7 ] = false;
+        // $sizes[ 7 ] = false;
 
         //Youtube image formatting hack to remove black bars
         if(strstr($url, "i.ytimg.com")){
