@@ -328,15 +328,15 @@ $app->get("/image", function () use ($app) {
 });
 
 
-$app->get("/frame/{id}", function ($id) use ($app) {
+$app->get("/projects/{projectId}/frames/{frameId}", function ($projectId, $frameId) use ($app) {
     // Create unique filename
     $fileName = md5( uniqid( rand(), true )) . ".jpg";
 
     // Run cutycapt to create screencapture
-
-    exec( "/opt/webcapture/webpage_capture -t 80x60 -crop ". FRAME_URL . $id . "/view " . PATH, $output );
+    $url = ZEEGA_HOST . "projects/$projectId/frames/$frameId";
+    exec( "/opt/webcapture/webpage_capture -t 80x60 -crop $url " . PATH, $output );
     $file=explode(":", $output[4] );
-
+    
     // Test if screencapture successfule TODO create better test
     if(!is_null($file[1])){
         // Instantiate the S3 class

@@ -5,7 +5,7 @@
     
     define("IMAGE_BUCKET", "");
     define("FRAME_BUCKET", "");
-    define("FRAME_URL", "");
+    define("ZEEGA_HOST", "");
     define("PATH", "");
 
 
