@@ -13,7 +13,7 @@ use Guzzle\Http\EntityBody;
 use Zeega\ImagickService;
 
 $app = new Silex\Application();
-$app["debug"] = false;
+$app["debug"] = true;
 
 /*
 $app->register(new Silex\Provider\MonologServiceProvider(), array(
@@ -73,8 +73,32 @@ $app->post("/image", function () use ($app) {
 
         if(isset($fileType)){
             $img = new Imagick($_FILES["imagefile"]["tmp_name"]);
+//            $img =  $app['imagick_service']->autoRotateImage($img);
+            
+      $orientation = $img->getImageOrientation();
 
-            // Save originals when file type is gif
+     switch($orientation) {
+        case imagick::ORIENTATION_BOTTOMRIGHT:
+            $img->rotateimage("#000", 180); // rotate 180 degrees 
+        break;
+
+        case imagick::ORIENTATION_RIGHTTOP:
+            $img->rotateimage("#000", 90); // rotate 90 degrees CW 
+        break;
+
+        case imagick::ORIENTATION_LEFTBOTTOM:
+            $img->rotateimage("#000", -90); // rotate 90 degrees CCW 
+        break;
+     }
+
+      // Now that it's auto-rotated, make sure the EXIF data is correct in case the EXIF gets saved with the image! 
+      $img->setImageOrientation(imagick::ORIENTATION_TOPLEFT);
+
+
+
+
+
+// Save originals when file type is gif
             // TODO resize GIFs
             if( $fileType == "image/gif"){
                 $sizes[ 0 ] = true;

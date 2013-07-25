@@ -7,6 +7,7 @@ use Silex\ServiceProviderInterface;
 
 class ImagickService
 {
+
     public function isAnimatedImage ( $image ) {
         $frame = 0;
         foreach($image->deconstructImages() as $i) {
