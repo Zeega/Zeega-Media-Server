@@ -116,9 +116,17 @@ $app->post("/image", function () use ($app) {
     if ( isset($img) ) {
         
 
-        $fileExt = explode(".", $_GET["url"]);
-        $fileExt = array_pop($fileExt);
-        $fileExt = strtolower($fileExt);
+        if( $fileType == "image/gif" ){
+
+            $img->writeFile("/tmp/media/" +  $fileNames[ 0 ] );
+            
+        }
+
+
+        $v = exec(  "montage /tmp/media/".$fileNames[ 0 ]." -coalesce -tile 1x -frame 4 -geometry '+0+0' -background none -bordercolor none/tmp/media/".$filePrefix . ".jpg");
+
+
+
 
         if( $fileExt == "png" ){
             $img->setImageFormat( "png" );
@@ -177,6 +185,21 @@ $app->post("/image", function () use ($app) {
                 $fileNames[ 4 ] = $filePrefix . "_4." . $fileExt;
             }
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         // Upload files to S3, Original file is uploaded using putObjectFile instead of putObject
 
