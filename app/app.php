@@ -1,5 +1,6 @@
 <?php
 
+ ini_set('display_errors', 1);
 
 //TODO move image manipulation code to separate class
 
@@ -118,13 +119,20 @@ $app->post("/image", function () use ($app) {
 
         if( $fileType == "image/gif" ){
 
-            $img->writeFile("/tmp/media/" +  $fileNames[ 0 ] );
+           
+           
+	  
+         
+        
+            move_uploaded_file($_FILES["imagefile"]["tmp_name"], "/tmp/media/" .  $fileNames[ 0 ]);   
+
+            $fileNames[ 8 ] = "zga_" . $filePrefix . ".jpg";
+            $v = exec(  "montage /tmp/media/".$fileNames[ 0 ]." -coalesce -tile 1x -frame 0 -geometry '+0+0' -background none -bordercolor none /tmp/media/".$fileNames[ 8 ]);
             
+           
+	    $montage = new Imagick( "/tmp/media/".$fileNames[ 8 ]);
+	    $files [ 8 ] = $montage->getImageBlob();
         }
-
-
-        $v = exec(  "montage /tmp/media/".$fileNames[ 0 ]." -coalesce -tile 1x -frame 4 -geometry '+0+0' -background none -bordercolor none/tmp/media/".$filePrefix . ".jpg");
-
 
 
 
@@ -203,7 +211,7 @@ $app->post("/image", function () use ($app) {
 
         // Upload files to S3, Original file is uploaded using putObjectFile instead of putObject
 
-        for( $i = 0; $i < 8; $i++ ){
+        for( $i = 0; $i < 9; $i++ ){
             if( isset($fileNames[ $i ])){
 
                 // Post to S3 server
