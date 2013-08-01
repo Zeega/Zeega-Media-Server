@@ -124,14 +124,21 @@ $app->post("/image", function () use ($app) {
 	  
          
         
-            move_uploaded_file($_FILES["imagefile"]["tmp_name"], "/tmp/media/" .  $fileNames[ 0 ]);   
-
-            $fileNames[ 8 ] = "zga_" . $filePrefix . ".jpg";
-            $v = exec(  "montage /tmp/media/".$fileNames[ 0 ]." -coalesce -tile 1x -frame 0 -geometry '+0+0' -background none -bordercolor none /tmp/media/".$fileNames[ 8 ]);
+            //move_uploaded_file($_FILES["imagefile"]["tmp_name"], "/tmp/media/" .  $fileNames[ 0 ]);   
             
-           
-	    $montage = new Imagick( "/tmp/media/".$fileNames[ 8 ]);
+            $frameRate = $img->getImageDelay();
+          
+	    $frameCount = $img->getNumberImages();
+            
+	    $metadata = $img->getImageWidth() . "_" . $img->getImageHeight() . "_" . $img->getNumberImages() . "_" .  $img->getImageDelay();
+            //return new Response ($metadata);
+            $fileNames[ 8 ] = "zga_" . $metadata . "_" . $filePrefix . ".jpg";
+            $v = exec(  "montage " . $_FILES["imagefile"]["tmp_name"] . " -coalesce -tile x1 -frame 0 -geometry '+0+0' -quality 80 -colors 256 -background none -bordercolor none /tmp/media/".$fileNames[ 8 ]);           
+            //return new Response("/tmp/media/". $fileNames[ 8 ] );
+	    $montage = new Imagick( "/tmp/media/". $fileNames[ 8 ]);
 	    $files [ 8 ] = $montage->getImageBlob();
+            $montage->destroy();
+            unlink ($_FILES["imagefile"]["tmp_name"]);
         }
 
 
@@ -151,6 +158,7 @@ $app->post("/image", function () use ($app) {
             $img2->thumbnailImage(200,0);
             $files[ 5 ] = $img2->getImageBlob();
             $fileNames[ 5 ] = $filePrefix . "_5." . $fileExt;
+            $img2->destroy();
         }
 
         // Large Size (max dimension 800px)
@@ -207,13 +215,13 @@ $app->post("/image", function () use ($app) {
 
 
 
-
+	$img->destroy();
 
         // Upload files to S3, Original file is uploaded using putObjectFile instead of putObject
 
         for( $i = 0; $i < 9; $i++ ){
-            if( isset($fileNames[ $i ])){
-
+            if( isset($fileNames[ $i ]) ){
+        //       echo $i;
                 // Post to S3 server
                 $res = $client->putObject(array(
                         "Bucket" => IMAGE_BUCKET,
