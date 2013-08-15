@@ -70,7 +70,7 @@ $app->post("/image", function () use ($app) {
                 $fileType = "image/" . $fileExt;
             }
         }
-
+  
         if(isset($fileType)){
             $img = new Imagick($_FILES["imagefile"]["tmp_name"]);
 //            $img =  $app['imagick_service']->autoRotateImage($img);
@@ -116,7 +116,7 @@ $app->post("/image", function () use ($app) {
     if ( isset($img) ) {
         
 
-        $fileExt = explode(".", $_GET["url"]);
+        $fileExt = explode("/", $fileType);
         $fileExt = array_pop($fileExt);
         $fileExt = strtolower($fileExt);
 
