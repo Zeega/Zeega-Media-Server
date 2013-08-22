@@ -133,7 +133,7 @@ $app->post("/image", function () use ($app) {
 	    $metadata = $img->getImageWidth() . "_" . $img->getImageHeight() . "_" . $img->getNumberImages() . "_" .  $img->getImageDelay();
             //return new Response ($metadata);
             $fileNames[ 8 ] = "zga_" . $metadata . "_" . $filePrefix . ".jpg";
-            $v = exec(  "montage " . $_FILES["imagefile"]["tmp_name"] . " -coalesce -tile x1 -frame 0 -geometry '+0+0' -quality 80 -colors 256 -background none -bordercolor none /tmp/media/".$fileNames[ 8 ]);           
+            $v = exec(  "montage " . $_FILES["imagefile"]["tmp_name"] . " -coalesce -tile 1x -frame 0 -geometry '+0+0' -quality 80 -colors 256 -background none -bordercolor none /tmp/media/".$fileNames[ 8 ]);           
             //return new Response("/tmp/media/". $fileNames[ 8 ] );
 	    $montage = new Imagick( "/tmp/media/". $fileNames[ 8 ]);
 	    $files [ 8 ] = $montage->getImageBlob();
