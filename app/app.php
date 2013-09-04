@@ -1,8 +1,7 @@
 <?php
 
- ini_set('display_errors', 1);
-
-//TODO move image manipulation code to separate class
+ini_set('display_errors', 1);
+set_time_limit(20);
 
 require_once __DIR__.'/bootstrap.php';
 
@@ -16,11 +15,9 @@ use Zeega\ImagickService;
 $app = new Silex\Application();
 $app["debug"] = true;
 
-/*
 $app->register(new Silex\Provider\MonologServiceProvider(), array(
     'monolog.logfile' => __DIR__.'/../logs/dev.log',
 ));
-*/
 
 $app['imagick_service'] = function() {
     return new ImagickService();
@@ -28,20 +25,28 @@ $app['imagick_service'] = function() {
 
 
 
-$app->post("/image", function () use ($app) {
-
-   
-  // return var_dump($_FILES);
-   if( isset($_FILES["file"])) $_FILES["imagefile"]=$_FILES["file"];
+$app->post("/image", function () use ($app) {   
+    $start = microtime(true);
+    $app['monolog']->addDebug("$start started");
+    if( isset($_FILES["file"]) ) {
+        $_FILES["imagefile"]=$_FILES["file"];
+    }
+        
+    $time = microtime(true) - $start;
+    $app['monolog']->addDebug("$time Create unique filename");
     // Create unique filename
     $filePrefix = md5( uniqid( rand(), true ));
-
+    $time = microtime(true) - $start;
+    $app['monolog']->addDebug("$time Connecting to S3");
+    
     $aws = Aws::factory(array(
-                    'key' => AWS_ACCESS_KEY,
-                    'secret' => AWS_SECRET_KEY
-                ));
-    $client = $aws->get('s3');
+        'key' => AWS_ACCESS_KEY,
+        'secret' => AWS_SECRET_KEY
+    ));
 
+    $client = $aws->get('s3');
+    $time = microtime(true) - $start;
+    $app['monolog']->addDebug("$time Connected to S3");
     // Check sizes requested
     if( isset($_GET["sizes"]) ) {
         $sizeList = (string) $_GET["sizes"];
@@ -72,42 +77,41 @@ $app->post("/image", function () use ($app) {
             }
         }
 
-        if(isset($fileType)){
-            $img = new Imagick($_FILES["imagefile"]["tmp_name"]);
-//            $img =  $app['imagick_service']->autoRotateImage($img);
+        if(isset($fileType)) {
+            try{
+                $img = new Imagick($_FILES["imagefile"]["tmp_name"]);
+            } catch ( ImagickException $e ) {
+                return new Response("Invalid image",500);
+            }
             
-      $orientation = $img->getImageOrientation();
+            $orientation = $img->getImageOrientation();
 
-     switch($orientation) {
-        case imagick::ORIENTATION_BOTTOMRIGHT:
-            $img->rotateimage("#000", 180); // rotate 180 degrees 
-        break;
+            switch($orientation) {
+                case imagick::ORIENTATION_BOTTOMRIGHT:
+                    $img->rotateimage("#000", 180); // rotate 180 degrees 
+                    break;
 
-        case imagick::ORIENTATION_RIGHTTOP:
-            $img->rotateimage("#000", 90); // rotate 90 degrees CW 
-        break;
+                case imagick::ORIENTATION_RIGHTTOP:
+                    $img->rotateimage("#000", 90); // rotate 90 degrees CW 
+                    break;
 
-        case imagick::ORIENTATION_LEFTBOTTOM:
-            $img->rotateimage("#000", -90); // rotate 90 degrees CCW 
-        break;
-     }
+                case imagick::ORIENTATION_LEFTBOTTOM:
+                    $img->rotateimage("#000", -90); // rotate 90 degrees CCW 
+                    break;
+            }
 
-      // Now that it's auto-rotated, make sure the EXIF data is correct in case the EXIF gets saved with the image! 
-      $img->setImageOrientation(imagick::ORIENTATION_TOPLEFT);
+            // Now that it's auto-rotated, make sure the EXIF data is correct in case the EXIF gets saved with the image! 
+            $img->setImageOrientation(imagick::ORIENTATION_TOPLEFT);
 
-
-
-
-
-// Save originals when file type is gif
+            // Save originals when file type is gif
             // TODO resize GIFs
-            if( $fileType == "image/gif"){
+            if( $fileType == "image/gif") {
                 $sizes[ 0 ] = true;
                 $sizes [ 7 ] = false;
             }
 
             // Save Originals
-            if( $sizes [ 0 ] ){
+            if( $sizes [ 0 ] ) {
                 $files[ 0 ] = fopen( $_FILES["imagefile"]["tmp_name"], "r");
                 $fileNames[ 0 ] = $filePrefix . "." . $fileExt;
             }
@@ -115,33 +119,31 @@ $app->post("/image", function () use ($app) {
     }
     
     if ( isset($img) ) {
-        
-
         if( $fileType == "image/gif" ){
-
-           
-           
-	  
-         
-        
-            //move_uploaded_file($_FILES["imagefile"]["tmp_name"], "/tmp/media/" .  $fileNames[ 0 ]);   
-            
-            $frameRate = $img->getImageDelay();
-          
-	    $frameCount = $img->getNumberImages();
-            
-	    $metadata = $img->getImageWidth() . "_" . $img->getImageHeight() . "_" . $img->getNumberImages() . "_" .  $img->getImageDelay();
-            //return new Response ($metadata);
+            $frameRate = $img->getImageDelay();          
+    	    $frameCount = $img->getNumberImages();
+ 
+            $metadata = $img->getImageWidth() . "_" . $img->getImageHeight() . "_" . $img->getNumberImages() . "_" .  $img->getImageDelay();
             $fileNames[ 8 ] = "zga_" . $metadata . "_" . $filePrefix . ".jpg";
-            $v = exec(  "montage " . $_FILES["imagefile"]["tmp_name"] . " -coalesce -tile x1 -frame 0 -geometry '+0+0' -quality 80 -colors 256 -background none -bordercolor none /tmp/media/".$fileNames[ 8 ]);           
-            //return new Response("/tmp/media/". $fileNames[ 8 ] );
-	    $montage = new Imagick( "/tmp/media/". $fileNames[ 8 ]);
-	    $files [ 8 ] = $montage->getImageBlob();
+            $time = microtime(true) - $start;
+            $app['monolog']->addDebug("$time Calling montage");
+            $v = exec(  " timeout 25 montage " . $_FILES["imagefile"]["tmp_name"] . " -coalesce -tile x1111 -frame 0 -geometry '+0+0' -quality 80 -colors 256 -background none -bordercolor none ".$fileNames[ 8 ]);           
+            $time = microtime(true) - $start;
+            $app['monolog']->addDebug("$time Called montage");
+            
+            try {
+                $montage = new Imagick( $fileNames[ 8 ]);
+            } catch ( ImagickException $e ) {
+                return new Response("Invalid image",500);
+            }
+
+    	    $files [ 8 ] = $montage->getImageBlob();
             $montage->destroy();
             unlink ($_FILES["imagefile"]["tmp_name"]);
+            $time = microtime(true) - $start;
+            $app['monolog']->addDebug("$time Cleaned up montage stuff");
+
         }
-
-
 
         if( $fileExt == "png" ){
             $img->setImageFormat( "png" );
@@ -149,8 +151,6 @@ $app->post("/image", function () use ($app) {
             $fileExt = "jpg";
             $img->setImageFormat("jpg");
         }
-
-
 
         // Thumbnail Size (max dimension 200px)
         if( $sizes[ 5 ] ) {
@@ -202,26 +202,13 @@ $app->post("/image", function () use ($app) {
             }
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-	$img->destroy();
+    	$img->destroy();
+        $time = microtime(true) - $start;
+        $app['monolog']->addDebug("$time Image processing is over. Uploading to S3");
 
         // Upload files to S3, Original file is uploaded using putObjectFile instead of putObject
-
         for( $i = 0; $i < 9; $i++ ){
             if( isset($fileNames[ $i ]) ){
-        //       echo $i;
                 // Post to S3 server
                 $res = $client->putObject(array(
                         "Bucket" => IMAGE_BUCKET,
@@ -235,19 +222,18 @@ $app->post("/image", function () use ($app) {
             }
         }
         $response[ "title" ] = $_FILES[ "imagefile" ][ "name" ];
-       if( $sizes[ 7 ] ){
-
+        
+        if( $sizes[ 7 ] ){
             $response[ "fullsize_url" ] = "http://" . IMAGE_BUCKET . ".s3.amazonaws.com/" . $fileNames[ 7 ];
-
         } else {
-
             $response[ "fullsize_url" ] = "http://" . IMAGE_BUCKET . ".s3.amazonaws.com/" . $fileNames[ 0 ];
-
         } 
+        $time = microtime(true) - $start;
+        $app['monolog']->addDebug("$time BAM. Done");
+        
         return json_encode($response);
     } else {
-
-         return new Response("",500);
+        return new Response("",500);
     }
 });
 
