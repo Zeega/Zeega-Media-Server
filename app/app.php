@@ -127,12 +127,12 @@ $app->post("/image", function () use ($app) {
             $fileNames[ 8 ] = "zga_" . $metadata . "_" . $filePrefix . ".jpg";
             $time = microtime(true) - $start;
             $app['monolog']->addDebug("$time Calling montage");
-            $v = exec(  " timeout 25 montage " . $_FILES["imagefile"]["tmp_name"] . " -coalesce -tile x1111 -frame 0 -geometry '+0+0' -quality 80 -colors 256 -background none -bordercolor none ".$fileNames[ 8 ]);           
+            $v = exec(  " timeout 25 montage " . $_FILES["imagefile"]["tmp_name"] . " -coalesce -tile x1111 -frame 0 -geometry '+0+0' -quality 80 -colors 256 -background none -bordercolor none /tmp/media/".$fileNames[ 8 ]);           
             $time = microtime(true) - $start;
             $app['monolog']->addDebug("$time Called montage");
             
             try {
-                $montage = new Imagick( $fileNames[ 8 ]);
+                $montage = new Imagick( "/tmp/media/".$fileNames[ 8 ]);
             } catch ( ImagickException $e ) {
                 return new Response("Invalid image",500);
             }
@@ -229,7 +229,7 @@ $app->post("/image", function () use ($app) {
             $response[ "fullsize_url" ] = "http://" . IMAGE_BUCKET . ".s3.amazonaws.com/" . $fileNames[ 0 ];
         } 
         $time = microtime(true) - $start;
-        $app['monolog']->addDebug("$time BAM. Done");
+        $app['monolog']->addDebug("$time Done");
         
         return json_encode($response);
     } else {
