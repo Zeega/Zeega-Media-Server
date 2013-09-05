@@ -120,29 +120,46 @@ $app->post("/image", function () use ($app) {
     
     if ( isset($img) ) {
         if( $fileType == "image/gif" ){
-            $frameRate = $img->getImageDelay();          
-    	    $frameCount = $img->getNumberImages();
- 
-            $metadata = $img->getImageWidth() . "_" . $img->getImageHeight() . "_" . $img->getNumberImages() . "_" .  $img->getImageDelay();
-            $fileNames[ 8 ] = "zga_" . $metadata . "_" . $filePrefix . ".jpg";
-            $time = microtime(true) - $start;
-            $app['monolog']->addDebug("$time Calling montage");
-            $v = exec(  " timeout 25 montage " . $_FILES["imagefile"]["tmp_name"] . " -coalesce -tile x1111 -frame 0 -geometry '+0+0' -quality 80 -colors 256 -background none -bordercolor none /tmp/media/".$fileNames[ 8 ]);           
-            $time = microtime(true) - $start;
-            $app['monolog']->addDebug("$time Called montage");
-            
-            try {
-                $montage = new Imagick( "/tmp/media/".$fileNames[ 8 ]);
-            } catch ( ImagickException $e ) {
-                return new Response("Invalid image",500);
+            $transparentPixels = array();
+            $transparentMask = array('0','0','0','0');
+            exec("timeout 5 convert " . $_FILES["imagefile"]["tmp_name"] . "[0-3] -format '%[fx:int(255*p{10,10}.a)]' info:", $transparentPixels);
+            if ($transparentPixels == $transparentMask) {
+                // top left pixels are transparent => gif is transparent => don't do it again
+                unset($sizes [ 8 ]);
+                unset($files[ 8 ]);              
+            } else {
+                $frameRate = $img->getImageDelay();          
+        	    $frameCount = $img->getNumberImages();
+     
+                $metadata = $img->getImageWidth() . "_" . $img->getImageHeight() . "_" . $img->getNumberImages() . "_" .  $img->getImageDelay();
+                $fileNames[ 8 ] = "zga_" . $metadata . "_" . $filePrefix . ".jpg";
+                $time = microtime(true) - $start;
+                $app['monolog']->addDebug("$time Calling montage");
+                $v = exec(  " timeout 25 montage " . $_FILES["imagefile"]["tmp_name"] . " -coalesce -tile x1111 -frame 0 -geometry '+0+0' -quality 80 -colors 256 -background none -bordercolor none /tmp/media/".$fileNames[ 8 ]);           
+                $time = microtime(true) - $start;
+                $app['monolog']->addDebug("$time Called montage");
+                
+                try {
+                    $montage = new Imagick( "/tmp/media/".$fileNames[ 8 ]);
+                } catch ( ImagickException $e ) {
+                    return new Response("Invalid image",500);
+                }
+
+        	    $files [ 8 ] = $montage->getImageBlob();
+                $montage->destroy();
+                
+                $time = microtime(true) - $start;
+                $app['monolog']->addDebug("$time Cleaned up montage stuff");
+                $zgaSize = filesize("/tmp/media/".$fileNames[ 8 ]);
+                $originalGifSize = filesize($_FILES["imagefile"]["tmp_name"]);
+                if ($originalGifSize < $zgaSize) {
+                    unset($sizes[ 8 ]);
+                    unset($files[ 8 ]);
+                    unset($fileNames[ 8 ]);
+                }
+
+                unlink ($_FILES["imagefile"]["tmp_name"]);
             }
-
-    	    $files [ 8 ] = $montage->getImageBlob();
-            $montage->destroy();
-            unlink ($_FILES["imagefile"]["tmp_name"]);
-            $time = microtime(true) - $start;
-            $app['monolog']->addDebug("$time Cleaned up montage stuff");
-
         }
 
         if( $fileExt == "png" ){
