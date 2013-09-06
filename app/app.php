@@ -179,9 +179,9 @@ $app->post("/image", function () use ($app) {
             $imageWidth = $img->getImageWidth();
 
             if($imageWidth < $imageHeight) {
-                $img2->thumbnailImage(100,0);
+                $img2->thumbnailImage(150,0);
             } else {
-                $img2->thumbnailImage(0,100);
+                $img2->thumbnailImage(0,150);
             }
 
             $files[ 5 ] = $img2->getImageBlob();
