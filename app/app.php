@@ -183,7 +183,7 @@ $app->post("/image", function () use ($app) {
             $img2->destroy();
         }
         */
-
+        $img = $app['imagick_service']->coalesceIfAnimated($img);
         // Large Size (max dimension 800px)
         if( $sizes[ 7 ] ) {
 
