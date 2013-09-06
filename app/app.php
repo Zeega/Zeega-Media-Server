@@ -130,8 +130,12 @@ $app->post("/image", function () use ($app) {
             } else {                
                 $frameRate = $img->getImageDelay();          
         	    $frameCount = $img->getNumberImages();
-     
-                $metadata = $img->getImageWidth() . "_" . $img->getImageHeight() . "_" . $img->getNumberImages() . "_" .  $img->getImageDelay();
+                
+                if ($frameRate == 0) {
+                    $frameRate = 10;
+                }
+
+                $metadata = $img->getImageWidth() . "_" . $img->getImageHeight() . "_" . $img->getNumberImages() . "_" .  $frameRate;
                 $fileNames[ 8 ] = "zga_" . $metadata . "_" . $filePrefix . ".jpg";
                 $time = microtime(true) - $start;
                 $app['monolog']->addDebug("$time Calling montage");
