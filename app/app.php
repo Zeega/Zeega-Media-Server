@@ -119,7 +119,6 @@ $app->post("/image", function () use ($app) {
     }
     
     if ( isset($img) ) {
-        /*
         if( $fileType == "image/gif" ){
             $transparentPixels = array();
             $transparentMask = array('0','0','0','0');
@@ -166,7 +165,7 @@ $app->post("/image", function () use ($app) {
                 unlink ($_FILES["imagefile"]["tmp_name"]);
             }
         }
-        */
+        
         if( $fileExt == "png" ){
             $img->setImageFormat( "png" );
         } else {
@@ -174,16 +173,22 @@ $app->post("/image", function () use ($app) {
             $img->setImageFormat("jpg");
         }
 
-        // Thumbnail Size (max dimension 200px)
-        /*
-        if( $sizes[ 5 ] ) {
+        if( $sizes[ 5 ] && isset($files[ 8 ])) {
             $img2 = clone $img;
-            $img2->thumbnailImage(200,0);
+            $imageHeight = $img->getImageHeight();
+            $imageWidth = $img->getImageWidth();
+
+            if($imageWidth < $imageHeight) {
+                $img2->thumbnailImage(100,0);
+            } else {
+                $img2->thumbnailImage(0,100);
+            }
+
             $files[ 5 ] = $img2->getImageBlob();
             $fileNames[ 5 ] = $filePrefix . "_5." . $fileExt;
             $img2->destroy();
         }
-        */
+        
         $img = $app['imagick_service']->coalesceIfAnimated($img);
         // Large Size (max dimension 800px)
         if( $sizes[ 7 ] ) {
