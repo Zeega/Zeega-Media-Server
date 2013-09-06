@@ -119,6 +119,7 @@ $app->post("/image", function () use ($app) {
     }
     
     if ( isset($img) ) {
+        /*
         if( $fileType == "image/gif" ){
             $transparentPixels = array();
             $transparentMask = array('0','0','0','0');
@@ -165,7 +166,7 @@ $app->post("/image", function () use ($app) {
                 unlink ($_FILES["imagefile"]["tmp_name"]);
             }
         }
-
+        */
         if( $fileExt == "png" ){
             $img->setImageFormat( "png" );
         } else {
