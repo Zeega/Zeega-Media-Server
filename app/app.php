@@ -59,8 +59,8 @@ $app->post("/image", function () use ($app) {
             }
         }
     } else {
-        $sizes[ 4 ] = $sizes [ 5 ] =  $sizes[ 6 ] = $sizes [ 7 ] = true;
-        $sizes[ 0 ] = false;
+        $sizes[ 4 ] = $sizes [ 5 ] = $sizes [ 7 ] = true;
+        $sizes[ 0 ] = $sizes[ 6 ] = false;
     }
 
     if( isset($_FILES["imagefile"]["tmp_name"]) ) {
@@ -127,7 +127,7 @@ $app->post("/image", function () use ($app) {
                 // top left pixels are transparent => gif is transparent => don't do it again
                 unset($sizes [ 8 ]);
                 unset($files[ 8 ]);              
-            } else {
+            } else {                
                 $frameRate = $img->getImageDelay();          
         	    $frameCount = $img->getNumberImages();
      
@@ -170,6 +170,7 @@ $app->post("/image", function () use ($app) {
         }
 
         // Thumbnail Size (max dimension 200px)
+        /*
         if( $sizes[ 5 ] ) {
             $img2 = clone $img;
             $img2->thumbnailImage(200,0);
@@ -177,6 +178,7 @@ $app->post("/image", function () use ($app) {
             $fileNames[ 5 ] = $filePrefix . "_5." . $fileExt;
             $img2->destroy();
         }
+        */
 
         // Large Size (max dimension 800px)
         if( $sizes[ 7 ] ) {
