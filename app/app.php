@@ -139,9 +139,8 @@ $app->post("/image", function () use ($app) {
                 $fileNames[ 8 ] = "zga_" . $metadata . "_" . $filePrefix . ".jpg";
                 $time = microtime(true) - $start;
                 $app['monolog']->addDebug("$time Calling montage");
-		$app['monolog']->addDebug(" timeout 25 montage " . $_FILES["imagefile"]["tmp_name"] . " -coalesce -tile x1111 -frame 0 -geometry '+0+0' -quality 80 -colors 256 -background none -bordercolor none /tmp/media/".$fileNames[ 8 ]);
 
-                $v = exec(  " timeout 25 montage " . $_FILES["imagefile"]["tmp_name"] . " -coalesce -tile x1111 -frame 0 -geometry '+0+0' -quality 80 -colors 256 -background none -bordercolor none /tmp/media/".$fileNames[ 8 ]);           
+                $v = exec(  " timeout 15 montage " . $_FILES["imagefile"]["tmp_name"] . " -coalesce -tile x1111 -frame 0 -geometry '+0+0' -quality 80 -colors 256 -background none -bordercolor none /tmp/media/".$fileNames[ 8 ]);           
                 $time = microtime(true) - $start;
                 $app['monolog']->addDebug("$time Called montage");
                 
