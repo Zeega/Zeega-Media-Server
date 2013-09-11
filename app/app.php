@@ -143,19 +143,12 @@ $app->post("/image", function () use ($app) {
                 $v = exec(  " timeout 15 montage " . $_FILES["imagefile"]["tmp_name"] . " -coalesce -tile x1111 -frame 0 -geometry '+0+0' -quality 80 -colors 256 -background none -bordercolor none /tmp/media/".$fileNames[ 8 ]);           
                 $time = microtime(true) - $start;
                 $app['monolog']->addDebug("$time Called montage");
-                
-                try {
-                    $montage = new Imagick( "/tmp/media/".$fileNames[ 8 ]);
-                } catch ( ImagickException $e ) {
-                    $useZga = false;
-                    //return new Response("Invalid image",500);
-                }
-                if ( isset($montage) ) {
-        	    $files [ 8 ] = $montage->getImageBlob();
-                    $montage->destroy();
-                
-                    $time = microtime(true) - $start;
-                    $app['monolog']->addDebug("$time Cleaned up montage stuff");
+
+
+                $useZga = file_exists("/tmp/media/" .$fileNames[ 8 ]);
+
+                if ( $useZga ) {
+    
                     $zgaSize = filesize("/tmp/media/".$fileNames[ 8 ]);
                     $originalGifSize = filesize($_FILES["imagefile"]["tmp_name"]);
                     $useZga = $originalGifSize > $zgaSize;
@@ -239,8 +232,21 @@ $app->post("/image", function () use ($app) {
         $time = microtime(true) - $start;
         $app['monolog']->addDebug("$time Image processing is over. Uploading to S3");
 
+
+         if( $useZga ){
+           $res = $client->putObject(array(
+                 "Bucket" => IMAGE_BUCKET,
+                   "Key"    => $fileNames[ 8 ],
+                    "Body"  => EntityBody::factory(fopen ("/tmp/media/".$fileNames[8], "r")),
+                    "ACL" => CannedAcl::PUBLIC_READ,
+                   "ContentType" => "image/jpg"
+                )
+            );
+            $response[ "image_url_8" ] = "http://" . IMAGE_BUCKET . ".s3.amazonaws.com/" . $fileNames[ 8 ];
+        }
+
         // Upload files to S3, Original file is uploaded using putObjectFile instead of putObject
-        for( $i = 0; $i < 9; $i++ ){
+        for( $i = 0; $i < 8; $i++ ){
             if( isset($fileNames[ $i ]) ){
                 // Post to S3 server
                 $res = $client->putObject(array(
