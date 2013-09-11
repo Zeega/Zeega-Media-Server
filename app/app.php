@@ -170,7 +170,7 @@ $app->post("/image", function () use ($app) {
             $img->setImageFormat("jpg");
         }
 
-        if( $sizes[ 5 ] && isset($files[ 8 ])) {
+        if( $sizes[ 5 ] && $useZga ) {
             $img2 = clone $img;
             $imageHeight = $img->getImageHeight();
             $imageWidth = $img->getImageWidth();
