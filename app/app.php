@@ -119,6 +119,9 @@ $app->post("/image", function () use ($app) {
     }
     
     if ( isset($img) ) {
+
+        $useZga = false;
+
         if( $fileType == "image/gif" ){
             $transparentPixels = array();
             $transparentMask = array('0','0','0','0');
