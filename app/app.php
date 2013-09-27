@@ -267,9 +267,11 @@ $app->post("/image", function () use ($app) {
         
         if( $sizes[ 7 ] ){
             $response[ "fullsize_url" ] = "http://" . IMAGE_BUCKET . ".s3.amazonaws.com/" . $fileNames[ 7 ];
-        } else {
+        } else if(isset($fileNames[ 0])) {
             $response[ "fullsize_url" ] = "http://" . IMAGE_BUCKET . ".s3.amazonaws.com/" . $fileNames[ 0 ];
-        } 
+        } else {
+    $response["fullsize_url"] = "null";        
+}
         $time = microtime(true) - $start;
         $app['monolog']->addDebug("$time Done");
         
